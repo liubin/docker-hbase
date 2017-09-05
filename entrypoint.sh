@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
 
 echo -e "**********************\n\nStarting HBase as ${MODE}:"
-NN_NGINX=${NN_NGINX:-"localhost:9090"}
+NN_NGINX_LIST=${NN_NGINX_LIST:-"localhost:9090"}
 
 download_hdfs_conf(){
-    IFS=":" read -ra REMOTE_ADDR <<< "${NN_NGINX}"
+    IFS=',' read -ra NN_NGINXS <<< "$NN_NGINX_LIST"
+    num_nn=${#NN_NGINXS[*]}
 
-    until $(nc -z -v -w5 ${REMOTE_ADDR[0]} ${REMOTE_ADDR[1]}); do
-        echo "Waiting for ${NN_NGINX} to be available..."
+    IFS=":" read -ra REMOTE_ADDR <<< "${NN_NGINXS[$((RANDOM%num_nn))]}"
+
+    NGINX_HOST=REMOTE_ADDR[0]
+    NGINX_PORT=REMOTE_ADDR[1]
+    until $(nc -z -v -w5 ${NGINX_HOST} ${NGINX_PORT}); do
+        echo "Waiting for ${NGINX_HOST} ${NGINX_PORT} to be available..."
         sleep 3
     done
+    NN_NGINX="${NGINX_HOST}:${NGINX_PORT}"
     curl -s -o /opt/hbase/conf/hdfs-site.xml ${NN_NGINX}/hdfs-site.xml
     curl -s -o /opt/hbase/conf/core-site.xml ${NN_NGINX}/core-site.xml
 }
@@ -27,7 +33,7 @@ then
     /opt/hbase/bin/start-hbase.sh
     /opt/hbase/bin/hbase-daemon.sh start rest
 else
-    sed -i "s|{{hdfs.nn}}|$HDFS_NN|g" /opt/hbase/conf/hbase-site.xml
+    sed -i "s|{{hbase.rootdir}}|$HBASE_ROOTDIR|g" /opt/hbase/conf/hbase-site.xml
     sed -i "s|{{zookeeper.quorum}}|$ZOOKEEPER_QUORUM|g" /opt/hbase/conf/hbase-site.xml
     if [ "$MODE" == 'master' ]
     then
