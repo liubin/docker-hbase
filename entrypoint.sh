@@ -39,15 +39,15 @@ else
     sed -i "s|{{hbase.rootdir}}|$HBASE_ROOTDIR|g" /opt/hbase/conf/hbase-site.xml
     sed -i "s|{{zookeeper.quorum}}|$ZOOKEEPER_QUORUM|g" /opt/hbase/conf/hbase-site.xml
 
+    download_hdfs_conf
+
     if [ "$MODE" == 'master' ]
     then
-        download_hdfs_conf
         /opt/hbase/bin/hbase-daemon.sh --config /opt/hbase/conf/ start master
         /opt/hbase/bin/hbase-daemon.sh start rest
     elif [ "$MODE" == 'backup' ]
     then
-        download_hdfs_conf
-        /opt/hbase/bin/hbase-daemon.sh --config /opt/hbase/conf/ start master-backup
+        /opt/hbase/bin/hbase-daemon.sh --config /opt/hbase/conf/ start master --backup
     elif [ "$MODE" == 'regionserver' ]
     then
         /opt/hbase/bin/hbase-daemon.sh --config /opt/hbase/conf/ start regionserver
