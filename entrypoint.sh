@@ -9,8 +9,8 @@ download_hdfs_conf(){
 
     IFS=":" read -ra REMOTE_ADDR <<< "${NN_NGINXS[$((RANDOM%num_nn))]}"
 
-    NGINX_HOST=REMOTE_ADDR[0]
-    NGINX_PORT=REMOTE_ADDR[1]
+    NGINX_HOST="${REMOTE_ADDR[0]}"
+    NGINX_PORT="${REMOTE_ADDR[1]}"
     until $(nc -z -v -w5 ${NGINX_HOST} ${NGINX_PORT}); do
         echo "Waiting for ${NGINX_HOST} ${NGINX_PORT} to be available..."
         sleep 3
@@ -30,11 +30,15 @@ trap trap_func INT QUIT TRAP ABRT TERM EXIT
 
 if [ "$MODE" == 'standalone' ]
 then
+    mv /opt/hbase/conf/hbase-site-standalone.xml /opt/hbase/conf/hbase-site.xml
+
     /opt/hbase/bin/start-hbase.sh
     /opt/hbase/bin/hbase-daemon.sh start rest
 else
+    mv /opt/hbase/conf/hbase-site-distributed.xml /opt/hbase/conf/hbase-site.xml
     sed -i "s|{{hbase.rootdir}}|$HBASE_ROOTDIR|g" /opt/hbase/conf/hbase-site.xml
     sed -i "s|{{zookeeper.quorum}}|$ZOOKEEPER_QUORUM|g" /opt/hbase/conf/hbase-site.xml
+
     if [ "$MODE" == 'master' ]
     then
         download_hdfs_conf
