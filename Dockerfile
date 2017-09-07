@@ -19,7 +19,7 @@ RUN mkdir /opt && \
 ENV HBASE_HOME /opt/hbase
 WORKDIR /opt/hbase
 
-ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/hbase/bin
+ENV PATH $PATH:/opt/hbase/bin
 
 COPY conf/* /opt/hbase/conf/
 COPY entrypoint.sh /
