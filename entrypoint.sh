@@ -21,8 +21,14 @@ download_hdfs_conf(){
 }
 
 trap_func(){
-    echo -e "**********************\n\nShutting down HBase:"
-    /opt/hbase/bin/stop-hbase.sh
+    if [ "$MODE" == 'regionserver' ]
+    then
+        echo -e "**********************\n\nShutting down HBase regionserver:"
+        /opt/hbase/bin/hbase-daemon.sh stop regionserver
+    else
+        echo -e "**********************\n\nShutting down HBase cluster:"
+        /opt/hbase/bin/stop-hbase.sh
+    fi
     sleep 1
 }
 
@@ -33,7 +39,7 @@ then
     mv /opt/hbase/conf/hbase-site-standalone.xml /opt/hbase/conf/hbase-site.xml
 
     /opt/hbase/bin/start-hbase.sh
-    /opt/hbase/bin/hbase-daemon.sh start rest
+    # /opt/hbase/bin/hbase-daemon.sh start rest
 else
     mv /opt/hbase/conf/hbase-site-distributed.xml /opt/hbase/conf/hbase-site.xml
     sed -i "s|{{hbase.rootdir}}|$HBASE_ROOTDIR|g" /opt/hbase/conf/hbase-site.xml
@@ -44,10 +50,7 @@ else
     if [ "$MODE" == 'master' ]
     then
         /opt/hbase/bin/hbase-daemon.sh --config /opt/hbase/conf/ start master
-        /opt/hbase/bin/hbase-daemon.sh start rest
-    elif [ "$MODE" == 'backup' ]
-    then
-        /opt/hbase/bin/hbase-daemon.sh --config /opt/hbase/conf/ start master --backup
+        # /opt/hbase/bin/hbase-daemon.sh start rest
     elif [ "$MODE" == 'regionserver' ]
     then
         /opt/hbase/bin/hbase-daemon.sh --config /opt/hbase/conf/ start regionserver
@@ -55,5 +58,5 @@ else
 fi
 
 
-tail -f /opt/hbase/logs/* &
+tail -f /opt/hbase/logs/*.log &
 wait || :

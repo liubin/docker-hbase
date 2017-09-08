@@ -14,10 +14,10 @@ Start master:
 docker run -d --net=host --name=hbase-master -e HBASE_ROOTDIR=hdfs://ns1/hbase -e ZOOKEEPER_QUORUM=10.0.0.4:2181 -e NN_NGINX_LIST=10.0.0.4:9090,10.0.0.5:9090 -v /data/hbase:/hbase -e MODE=master liubin/hbase:1.2.6
 ```
 
-Start back master(optional):
+Start backup master(optional):
 
 ```
-docker run -d --net=host --name=hbase-backup -e HBASE_ROOTDIR=hdfs://ns1:8020/hbase -e ZOOKEEPER_QUORUM=10.0.0.4:2181 -e NN_NGINX_LIST=10.0.0.4:9090,10.0.0.5:9090 -v /data/hbase:/hbase -e MODE=backup liubin/hbase:1.2.6
+docker run -d --net=host --name=hbase-backup -e HBASE_ROOTDIR=hdfs://ns1:8020/hbase -e ZOOKEEPER_QUORUM=10.0.0.4:2181 -e NN_NGINX_LIST=10.0.0.4:9090,10.0.0.5:9090 -v /data/hbase:/hbase -e MODE=master liubin/hbase:1.2.6
 
 ```
 
