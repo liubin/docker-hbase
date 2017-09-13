@@ -12,7 +12,7 @@ ENV HBASE_HOME /opt/hbase
 
 # https://www.apache.org/mirrors/dist.html
 RUN mkdir /opt && \
-    curl -fL http://mirror.bit.edu.cn/apache/hbase/stable/hbase-${HBASE_VERSION}-bin.tar.gz | tar xzf - -C /opt && \
+    curl -fL http://ftp.kddilabs.jp/infosystems/apache/hbase/1.2.6/hbase-${HBASE_VERSION}-bin.tar.gz | tar xzf - -C /opt && \
     mv /opt/hbase-${HBASE_VERSION} ${HBASE_HOME} && \
     rm -rf /opt/hbase/docs && \
     rm -rf /tmp/* /var/tmp/* /var/cache/apk/*

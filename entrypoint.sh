@@ -16,10 +16,18 @@ download_hadoop_files(){
         sleep 3
     done
     NN_NGINX="${NGINX_HOST}:${NGINX_PORT}"
-    curl -s -o /opt/hbase/conf/hdfs-site.xml ${NN_NGINX}/hdfs-site.xml
-    curl -s -o /opt/hbase/conf/core-site.xml ${NN_NGINX}/core-site.xml
+    #curl -s -o /opt/hbase/conf/hdfs-site.xml ${NN_NGINX}/hdfs-site.xml
+    #curl -s -o /opt/hbase/conf/core-site.xml ${NN_NGINX}/core-site.xml
+
+    curl -s -o /tmp/hadoop.conf.tar.gz ${NN_NGINX}/hadoop.conf.tar.gz
+    cd /tmp && tar zxf hadoop.conf.tar.gz \
+    && cp hadoop/hdfs-site.xml /opt/hbase/conf/hdfs-site.xml \
+    && cp hadoop/core-site.xml /opt/hbase/conf/core-site.xml \
+    && cd /tmp/ && rm -rf hadoop && rm hadoop.conf.tar.gz
+
     curl -s -o /tmp/hadoop.lib.native.tar.gz ${NN_NGINX}/hadoop.lib.native.tar.gz
     tar zxf /tmp/hadoop.lib.native.tar.gz -C /opt/hbase/lib/
+    rm /tmp/hadoop.*.tar.gz
     # export HBASE_LIBRARY_PATH=$HBASE_HOME/lib/native
     # bin/hbase org.apache.hadoop.hbase.util.CompressionTest file:///tmp/test.txt snappy
 }
@@ -61,6 +69,4 @@ else
     fi
 fi
 
-
-tail -f /opt/hbase/logs/*.log &
 wait || :
