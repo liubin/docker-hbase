@@ -3,7 +3,7 @@
 echo -e "**********************\n\nStarting HBase as ${MODE}:"
 NN_NGINX_LIST=${NN_NGINX_LIST:-"localhost:9090"}
 
-download_hdfs_conf(){
+download_hadoop_files(){
     IFS=',' read -ra NN_NGINXS <<< "$NN_NGINX_LIST"
     num_nn=${#NN_NGINXS[*]}
 
@@ -18,6 +18,10 @@ download_hdfs_conf(){
     NN_NGINX="${NGINX_HOST}:${NGINX_PORT}"
     curl -s -o /opt/hbase/conf/hdfs-site.xml ${NN_NGINX}/hdfs-site.xml
     curl -s -o /opt/hbase/conf/core-site.xml ${NN_NGINX}/core-site.xml
+    curl -s -o /tmp/hadoop.lib.native.tar.gz ${NN_NGINX}/hadoop.lib.native.tar.gz
+    tar zxf /tmp/hadoop.lib.native.tar.gz -C /opt/hbase/lib/
+    # export HBASE_LIBRARY_PATH=$HBASE_HOME/lib/native
+    # bin/hbase org.apache.hadoop.hbase.util.CompressionTest file:///tmp/test.txt snappy
 }
 
 trap_func(){
@@ -45,7 +49,7 @@ else
     sed -i "s|{{hbase.rootdir}}|$HBASE_ROOTDIR|g" /opt/hbase/conf/hbase-site.xml
     sed -i "s|{{zookeeper.quorum}}|$ZOOKEEPER_QUORUM|g" /opt/hbase/conf/hbase-site.xml
 
-    download_hdfs_conf
+    download_hadoop_files
 
     if [ "$MODE" == 'master' ]
     then

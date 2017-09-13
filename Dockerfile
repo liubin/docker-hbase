@@ -8,15 +8,16 @@ RUN curl -fLsS -o /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/rel
 ENV COMPRESSION NONE
 ENV HBASE_VERSION 1.2.6
 VOLUME /hbase
+ENV HBASE_HOME /opt/hbase
 
 # https://www.apache.org/mirrors/dist.html
 RUN mkdir /opt && \
     curl -fL http://mirror.bit.edu.cn/apache/hbase/stable/hbase-${HBASE_VERSION}-bin.tar.gz | tar xzf - -C /opt && \
-    mv /opt/hbase-${HBASE_VERSION} /opt/hbase && \
+    mv /opt/hbase-${HBASE_VERSION} ${HBASE_HOME} && \
     rm -rf /opt/hbase/docs && \
     rm -rf /tmp/* /var/tmp/* /var/cache/apk/*
 
-ENV HBASE_HOME /opt/hbase
+ENV HBASE_LIBRARY_PATH ${HBASE_HOME}/lib/native
 WORKDIR /opt/hbase
 
 ENV PATH $PATH:/opt/hbase/bin
