@@ -35,10 +35,10 @@ download_hadoop_files(){
 trap_func(){
     if [ "$MODE" == 'regionserver' ]
     then
-        echo -e "**********************\n\nShutting down HBase regionserver:"
+        echo -e "**********************\n\nShutting down HBase regionserver"
         /opt/hbase/bin/hbase-daemon.sh stop regionserver
     else
-        echo -e "**********************\n\nShutting down HBase cluster:"
+        echo -e "**********************\n\nShutting down HBase cluster"
         /opt/hbase/bin/stop-hbase.sh
     fi
     sleep 1
@@ -48,12 +48,15 @@ trap trap_func INT QUIT TRAP ABRT TERM EXIT
 
 if [ "$MODE" == 'standalone' ]
 then
-    mv /opt/hbase/conf/hbase-site-standalone.xml /opt/hbase/conf/hbase-site.xml
-
+    if [ -f /opt/hbase/conf/hbase-site-standalone.xml ]; then
+        mv /opt/hbase/conf/hbase-site-standalone.xml /opt/hbase/conf/hbase-site.xml
+    fi
     /opt/hbase/bin/start-hbase.sh
     # /opt/hbase/bin/hbase-daemon.sh start rest
 else
-    mv /opt/hbase/conf/hbase-site-distributed.xml /opt/hbase/conf/hbase-site.xml
+    if [ -f /opt/hbase/conf/hbase-site-distributed.xml ]; then
+        mv /opt/hbase/conf/hbase-site-distributed.xml /opt/hbase/conf/hbase-site.xml
+    fi
     sed -i "s|{{hbase.rootdir}}|$HBASE_ROOTDIR|g" /opt/hbase/conf/hbase-site.xml
     sed -i "s|{{zookeeper.quorum}}|$ZOOKEEPER_QUORUM|g" /opt/hbase/conf/hbase-site.xml
 
@@ -69,4 +72,32 @@ else
     fi
 fi
 
-wait || :
+echo "Waiting HBase to startup..."
+sleep 10
+echo "Check if HBase is running..."
+echo 'status' | hbase shell -n
+status=$?
+echo "status: ${status}"
+
+until [[ $status -eq 0 ]]; do
+    echo "Waiting for HBase to be available, status: ${status}"
+    sleep 5
+    echo 'status' | hbase shell -n
+    status=$?
+done
+
+if [ "$MODE" != 'regionserver' -a "$OPENTSDB_ENABLED" == "true" ]
+then
+    echo "Check if opentsdb tables exits ..."
+    source /create-opentsdb-tables.sh
+fi
+
+echo -e "\nInit has completed, HBase is running ..."
+while true; do
+    x=$(ps -ef | grep java | grep -v "grep" | wc -l)
+    if [[ $x -eq 0 ]]; then
+        echo "No Java processes is running, exit ...."
+        exit 0
+    fi
+    sleep 10
+done

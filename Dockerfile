@@ -5,9 +5,9 @@ RUN apk --no-cache --update add bash ca-certificates curl tar
 # https://github.com/Yelp/dumb-init
 RUN curl -fLsS -o /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 && chmod +x /usr/local/bin/dumb-init
 
-ENV COMPRESSION NONE
+ENV COMPRESSION SNAPPY
 ENV HBASE_VERSION 1.2.6
-VOLUME /hbase
+# VOLUME /hbase
 ENV HBASE_HOME /opt/hbase
 
 # https://www.apache.org/mirrors/dist.html
@@ -24,8 +24,10 @@ ENV PATH $PATH:/opt/hbase/bin
 
 COPY conf/* /opt/hbase/conf/
 COPY entrypoint.sh /
+COPY create-opentsdb-tables.sh /
 
 RUN chmod a+x /entrypoint.sh
+RUN chmod a+x /create-opentsdb-tables.sh
 ENV HADOOP_USER_NAME hadoop
 
 ENTRYPOINT ["/usr/local/bin/dumb-init", "/entrypoint.sh"]
