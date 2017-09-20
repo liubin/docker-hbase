@@ -38,8 +38,8 @@ trap_func(){
         echo -e "**********************\n\nShutting down HBase regionserver"
         /opt/hbase/bin/hbase-daemon.sh stop regionserver
     else
-        echo -e "**********************\n\nShutting down HBase cluster"
-        /opt/hbase/bin/stop-hbase.sh
+        echo -e "**********************\n\nShutting down HBase master"
+        /opt/hbase/bin/hbase-daemon.sh stop master
     fi
     sleep 1
 }
@@ -60,6 +60,8 @@ else
     sed -i "s|{{hbase.rootdir}}|$HBASE_ROOTDIR|g" /opt/hbase/conf/hbase-site.xml
     sed -i "s|{{zookeeper.quorum}}|$ZOOKEEPER_QUORUM|g" /opt/hbase/conf/hbase-site.xml
 
+    ZOOKEEPER_ZNODE_PARENT=${ZOOKEEPER_ZNODE_PARENT:-"/hbase"}
+    sed -i "s|{{zookeeper.znode.parent}}|$ZOOKEEPER_ZNODE_PARENT|g" /opt/hbase/conf/hbase-site.xml
     download_hadoop_files
 
     if [ "$MODE" == 'master' ]
