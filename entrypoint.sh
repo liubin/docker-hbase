@@ -91,7 +91,7 @@ done
 if [ "$MODE" != 'regionserver' -a "$OPENTSDB_ENABLED" == "true" ]
 then
     echo "Check if opentsdb tables exits ..."
-    source /create-opentsdb-tables.sh
+    /create-opentsdb-tables.sh
 fi
 
 echo -e "\nInit has completed, HBase is running ..."
